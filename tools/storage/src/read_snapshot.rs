@@ -127,6 +127,7 @@ fn test_parse_manifest() {
     use std::str::FromStr;
     let mut this_path = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
     this_path.push("fixtures/state_epoch_79_ver_33217173.795d/state.manifest");
+    //this_path.push("fixtures/state_epoch_54_ver_18120170.96e8/state.manifest");
     let _r = load_snapshot_manifest(&this_path).expect("parse manifest");
     // dbg!(&r.epoch);
 }

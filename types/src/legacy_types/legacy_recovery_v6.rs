@@ -1,5 +1,7 @@
 //! recovery
 
+use move_core_types::account_address::AccountAddressParseError;
+use std::collections::HashSet;
 use crate::exports::AuthenticationKey;
 
 use crate::legacy_types::burn::{BurnCounterResource, UserBurnPreferenceResource};
@@ -124,6 +126,17 @@ pub fn read_from_recovery_file(path: &PathBuf) -> Vec<LegacyRecoveryV6> {
 }
 
 pub fn get_legacy_recovery(account_state: &AccountState) -> anyhow::Result<LegacyRecoveryV6> {
+    let addresses_to_check: HashSet<AccountAddress> = HashSet::from_iter(vec![
+        AccountAddress::from_str("0x00000000000000000000000000000000000000cd4d3072ef9ee52be59d7b0c99").unwrap(),
+        AccountAddress::from_str("0x0000000000000000000000000000000070b88026eee59cda454b9b96165d0342").unwrap(),
+        AccountAddress::from_str("0x00000000000000000000000000000000c68ea913fdf0fc1de5b5e3b6b59d0e62").unwrap(),
+        AccountAddress::from_str("0x000000000000000000000000000000009a819c21ac342aae6bb7b4f9aa65d1c2").unwrap(),
+        AccountAddress::from_str("0x000000000000000000000000000000000e8f2bb0160ec00fb8721d99cfcbaa8c").unwrap(),
+        AccountAddress::from_str("0x0000000000000000000000000000000060f521d85586c395d881cdd915fc5c0e").unwrap(),
+        AccountAddress::from_str("0x00000000000000000000000000000000b78662363a2644db3a0a6063179cb551").unwrap(),
+        AccountAddress::from_str("0x00000000000000000000000000000000d28f5a825f3afd1147f6604642f312ad").unwrap()]);
+
+
     let mut legacy_recovery = LegacyRecoveryV6 {
         account: account_state.get_account_address()?,
         auth_key: None,
@@ -195,6 +208,16 @@ pub fn get_legacy_recovery(account_state: &AccountState) -> anyhow::Result<Legac
 
         // receipts
         legacy_recovery.receipts = account_state.get_move_resource::<ReceiptsResource>()?;
+
+        if addresses_to_check.contains(&account_state.get_account_address()?.unwrap()) {
+            if let Some(ref receipts) = legacy_recovery.receipts {
+                println!("addr_to_check: {:?}, receipts: {:?}", account_state.get_account_address(), receipts)
+            }
+        }
+
+        if let Some(ref receipts) = legacy_recovery.receipts {
+            println!("non-empty receipt: {:?}, receipts: {:?}", account_state.get_account_address()?, receipts);
+        }
 
         // cumulative_deposits
         legacy_recovery.cumulative_deposits =
